@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Users, Clock, Flame, CheckCircle, AlertCircle } from 'lucide-react';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+
 import clsx from 'clsx';
 
 const BookingSection = () => {
@@ -27,7 +26,7 @@ const BookingSection = () => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
 
         // Validate Opening Hours
@@ -56,25 +55,31 @@ const BookingSection = () => {
             }
         }
 
-        try {
-            await addDoc(collection(db, "reservations"), {
-                ...formData,
-                status: 'Pending',
-                createdAt: new Date()
-            });
-            showNotification("Reservation Request Sent! We'll confirm shortly.");
-            setFormData({
-                name: '',
-                email: '',
-                date: '',
-                time: '',
-                guests: '2',
-                occasion: 'none',
-            });
-        } catch (error) {
-            console.error("Error adding reservation: ", error);
-            showNotification("Failed to send reservation request. Please try again.", "error");
-        }
+        // Construct WhatsApp Message
+        const message = `*New Reservation Request*\n\n` +
+            `*Name:* ${formData.name}\n` +
+            `*Email:* ${formData.email}\n` +
+            `*Date:* ${formData.date}\n` +
+            `*Time:* ${formData.time}\n` +
+            `*Guests:* ${formData.guests}\n` +
+            `*Occasion:* ${formData.occasion}`;
+
+        const phoneNumber = "917049780160";
+        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+        // Open WhatsApp
+        window.open(whatsappUrl, '_blank');
+
+        showNotification("Redirecting to WhatsApp to complete your reservation!");
+
+        setFormData({
+            name: '',
+            email: '',
+            date: '',
+            time: '',
+            guests: '2',
+            occasion: 'none',
+        });
     };
 
     return (
