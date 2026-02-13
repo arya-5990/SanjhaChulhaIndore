@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, Users, Clock, Flame } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, Users, Clock, Flame, CheckCircle, AlertCircle } from 'lucide-react';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 import clsx from 'clsx';
 
 const BookingSection = () => {
@@ -13,16 +15,65 @@ const BookingSection = () => {
         occasion: 'none',
     });
 
+    const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+
+    const showNotification = (message, type = 'success') => {
+        setNotification({ show: true, message, type });
+        setTimeout(() => setNotification({ show: false, message: '', type: '' }), 5000); // Hide after 5 seconds
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Booking Data:', formData);
-        // Add logic to submit data
-        alert("Reservation Request Sent!");
+
+        // Validate Opening Hours
+        const selectedDate = new Date(formData.date + 'T00:00:00');
+        const day = selectedDate.getDay(); // 0 = Sun, 6 = Sat
+        const [hours, mins] = formData.time.split(':').map(Number);
+        const timeInMins = hours * 60 + mins;
+
+        const isWeekend = day === 0 || day === 6;
+
+        if (isWeekend) {
+            // Sat - Sun: 10:00 AM - 12:00 AM (Midnight)
+            // 10:00 AM = 600 mins. Midnight = 0 mins (next day), so effectively open till end of day.
+            // We assume booking allowed from 10:00 AM to 23:59 PM.
+            // If user selects 00:00 (Midnight), it is technically allowed as closing time, avoiding ambiguity we block it as "too early" for next day if treated as 0.
+            if (timeInMins < 600) {
+                showNotification("On Weekends, we are open from 10:00 AM to 12:00 AM (Midnight).", "error");
+                return;
+            }
+        } else {
+            // Mon - Fri: 11:00 AM - 11:00 PM
+            // 11:00 AM = 660 mins. 11:00 PM = 1320 mins.
+            if (timeInMins < 660 || timeInMins > 1320) {
+                showNotification("On Weekdays, we are open from 11:00 AM to 11:00 PM.", "error");
+                return;
+            }
+        }
+
+        try {
+            await addDoc(collection(db, "reservations"), {
+                ...formData,
+                createdAt: new Date()
+            });
+            showNotification("Reservation Request Sent! We'll confirm shortly.");
+            setFormData({
+                name: '',
+                email: '',
+                date: '',
+                time: '',
+                guests: '2',
+                occasion: 'none',
+            });
+        } catch (error) {
+            console.error("Error adding reservation: ", error);
+            showNotification("Failed to send reservation request. Please try again.", "error");
+        }
     };
 
     return (
@@ -79,6 +130,7 @@ const BookingSection = () => {
                                         required
                                         value={formData.date}
                                         onChange={handleChange}
+                                        min={new Date().toISOString().split('T')[0]}
                                         className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-brass-copper transition-colors appearance-none"
                                     />
                                 </div>
@@ -152,6 +204,22 @@ const BookingSection = () => {
                     </form>
                 </motion.div>
             </div>
+
+            {/* Custom Notification Toast */}
+            <AnimatePresence>
+                {notification.show && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: 20, x: '-50%' }}
+                        className={`fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl backdrop-blur-md border border-white/10 ${notification.type === 'error' ? 'bg-red-900/90 text-red-200' : 'bg-green-900/90 text-green-200'
+                            }`}
+                    >
+                        {notification.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
+                        <span className="font-medium">{notification.message}</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </section>
     );
 };
