@@ -59,6 +59,7 @@ const BookingSection = () => {
         try {
             await addDoc(collection(db, "reservations"), {
                 ...formData,
+                status: 'Pending',
                 createdAt: new Date()
             });
             showNotification("Reservation Request Sent! We'll confirm shortly.");
