@@ -1,6 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Star, User } from 'lucide-react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 const TeamMember = ({ name, role, image, bio, index }) => (
     <motion.div
@@ -30,32 +32,30 @@ const TeamMember = ({ name, role, image, bio, index }) => (
 );
 
 const TeamSection = () => {
-    const team = [
-        {
-            name: "Arjun Singh",
-            role: "Head Chef",
-            image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&q=80&w=1000",
-            bio: "With over 20 years of experience in traditional Punjabi cuisine, Chef Arjun brings the authentic taste of the 'pind' to your plate."
-        },
-        {
-            name: "Priya Sharma",
-            role: "Restaurant Manager",
-            image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=1000",
-            bio: "Ensuring every guest feels like family, Priya leads our service team with grace, warmth, and impeccable attention to detail."
-        },
-        {
-            name: "Vikram Malhotra",
-            role: "Sous Chef",
-            image: "https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?auto=format&fit=crop&q=80&w=1000",
-            bio: "A master of tandoor, Vikram's innovative approach to traditional spices adds a modern twist to our classic recipes."
-        },
-        {
-            name: "Anjali Gupta",
-            role: "Hospitality Lead",
-            image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=1000",
-            bio: "Dedicated to creating memorable dining experiences, Anjali ensures that the Sanjha Chulha spirit of togetherness is felt by all."
-        }
-    ];
+    const [team, setTeam] = useState([]);
+
+    useEffect(() => {
+        const fetchTeam = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(db, "Staff"));
+                const teamData = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        name: data.staffName,
+                        role: data.staffDesignation,
+                        image: data.staffImage,
+                        bio: data.staffDescription
+                    };
+                });
+                setTeam(teamData);
+            } catch (error) {
+                console.error("Error fetching team data: ", error);
+            }
+        };
+
+        fetchTeam();
+    }, []);
 
     return (
         <section className="py-24 px-4 bg-charcoal relative overflow-hidden">
@@ -80,19 +80,11 @@ const TeamSection = () => {
                         </p>
                     </motion.div>
 
-                    <motion.button
-                        initial={{ opacity: 0, x: 20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        path="/careers"
-                        className="px-8 py-3 rounded-full border border-white/10 text-white hover:bg-white/5 hover:border-golden-amber transition-all flex items-center gap-2 group"
-                    >
-                        Join Our Team <Star size={16} className="text-golden-amber group-hover:rotate-180 transition-transform duration-500" />
-                    </motion.button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {team.map((member, index) => (
-                        <TeamMember key={index} {...member} index={index} />
+                        <TeamMember key={member.id || index} {...member} index={index} />
                     ))}
                 </div>
             </div>
