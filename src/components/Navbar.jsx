@@ -37,7 +37,10 @@ const Navbar = () => {
                 <a href="#heritage" className="text-sm font-medium hover:text-golden-amber transition-colors">Our Story</a>
                 <a href="#contact" className="text-sm font-medium hover:text-golden-amber transition-colors">Contact</a>
 
-                <button className="bg-deep-terracotta hover:bg-burnt-sienna text-white px-6 py-2 rounded-full font-medium transition-all shadow-lg hover:shadow-deep-terracotta/50 backdrop-blur-sm border border-white/10">
+                <button
+                    onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="bg-deep-terracotta hover:bg-burnt-sienna text-white px-6 py-2 rounded-full font-medium transition-all shadow-lg hover:shadow-deep-terracotta/50 backdrop-blur-sm border border-white/10"
+                >
                     Book Table
                 </button>
             </div>
@@ -58,7 +61,15 @@ const Navbar = () => {
                     <a href="#menu" onClick={() => setIsOpen(false)} className="text-lg hover:text-deep-terracotta">Menu</a>
                     <a href="#heritage" onClick={() => setIsOpen(false)} className="text-lg hover:text-deep-terracotta">Our Story</a>
                     <a href="#contact" onClick={() => setIsOpen(false)} className="text-lg hover:text-deep-terracotta">Contact</a>
-                    <button className="mt-4 w-full bg-deep-terracotta py-3 rounded-xl font-bold">Book Table</button>
+                    <button
+                        onClick={() => {
+                            setIsOpen(false);
+                            document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="mt-4 w-full bg-deep-terracotta py-3 rounded-xl font-bold"
+                    >
+                        Book Table
+                    </button>
                 </motion.div>
             )}
         </motion.nav>

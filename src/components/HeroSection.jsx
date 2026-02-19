@@ -123,6 +123,7 @@ const HeroSection = () => {
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
+                            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
                             className="group relative px-8 py-4 bg-deep-terracotta text-white font-semibold rounded-full overflow-hidden shadow-lg shadow-deep-terracotta/30"
                         >
                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -134,6 +135,7 @@ const HeroSection = () => {
                         <motion.button
                             whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(181, 166, 66, 0.4)" }}
                             whileTap={{ scale: 0.95 }}
+                            onClick={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })}
                             className="px-8 py-4 border border-golden-amber/50 text-golden-amber hover:bg-golden-amber/10 font-semibold rounded-full transition-all flex items-center gap-2"
                         >
                             Explore Menu <ArrowRight size={18} />
