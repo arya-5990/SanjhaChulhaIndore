@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useMotionValue, useTransform } from 'framer-motion';
 import { Menu, X, ShoppingBag } from 'lucide-react';
 import clsx from 'clsx';
+import BusinessToggle from './BusinessToggle';
 
-const Navbar = () => {
+const Navbar = ({ activeBusiness, onToggle }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
@@ -25,23 +26,37 @@ const Navbar = () => {
                 isScrolled ? 'bg-night-dhaba/90 backdrop-blur-md border-b border-white/10 shadow-lg' : 'bg-transparent'
             )}
         >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-6">
                 <span className="text-2xl font-serif font-bold text-white tracking-wider">
                     Sanjha <span className="text-deep-terracotta">Chulha</span>
                 </span>
+
+                <BusinessToggle
+                    activeBusiness={activeBusiness}
+                    onToggle={onToggle}
+                />
             </div>
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-8">
-                <a href="#menu" className="text-sm font-medium hover:text-golden-amber transition-colors">Menu</a>
-                <a href="#heritage" className="text-sm font-medium hover:text-golden-amber transition-colors">Our Story</a>
+                {activeBusiness === 'restaurant' ? (
+                    <>
+                        <a href="#menu" className="text-sm font-medium hover:text-golden-amber transition-colors">Menu</a>
+                        <a href="#heritage" className="text-sm font-medium hover:text-golden-amber transition-colors">Our Story</a>
+                    </>
+                ) : (
+                    <>
+                        <a href="#services" className="text-sm font-medium hover:text-golden-amber transition-colors">Services</a>
+                        <a href="#gallery" className="text-sm font-medium hover:text-golden-amber transition-colors">Gallery</a>
+                    </>
+                )}
                 <a href="#contact" className="text-sm font-medium hover:text-golden-amber transition-colors">Contact</a>
 
                 <button
                     onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
                     className="bg-deep-terracotta hover:bg-burnt-sienna text-white px-6 py-2 rounded-full font-medium transition-all shadow-lg hover:shadow-deep-terracotta/50 backdrop-blur-sm border border-white/10"
                 >
-                    Book Table
+                    {activeBusiness === 'restaurant' ? 'Book Table' : 'Get Quote'}
                 </button>
             </div>
 
@@ -58,8 +73,17 @@ const Navbar = () => {
                     exit={{ opacity: 0, scale: 0.95 }}
                     className="absolute top-16 right-4 w-64 bg-night-dhaba border border-white/10 rounded-2xl shadow-xl p-6 flex flex-col gap-4 md:hidden"
                 >
-                    <a href="#menu" onClick={() => setIsOpen(false)} className="text-lg hover:text-deep-terracotta">Menu</a>
-                    <a href="#heritage" onClick={() => setIsOpen(false)} className="text-lg hover:text-deep-terracotta">Our Story</a>
+                    {activeBusiness === 'restaurant' ? (
+                        <>
+                            <a href="#menu" onClick={() => setIsOpen(false)} className="text-lg hover:text-deep-terracotta">Menu</a>
+                            <a href="#heritage" onClick={() => setIsOpen(false)} className="text-lg hover:text-deep-terracotta">Our Story</a>
+                        </>
+                    ) : (
+                        <>
+                            <a href="#services" onClick={() => setIsOpen(false)} className="text-lg hover:text-deep-terracotta">Services</a>
+                            <a href="#gallery" onClick={() => setIsOpen(false)} className="text-lg hover:text-deep-terracotta">Gallery</a>
+                        </>
+                    )}
                     <a href="#contact" onClick={() => setIsOpen(false)} className="text-lg hover:text-deep-terracotta">Contact</a>
                     <button
                         onClick={() => {
@@ -68,7 +92,7 @@ const Navbar = () => {
                         }}
                         className="mt-4 w-full bg-deep-terracotta py-3 rounded-xl font-bold"
                     >
-                        Book Table
+                        {activeBusiness === 'restaurant' ? 'Book Table' : 'Get Quote'}
                     </button>
                 </motion.div>
             )}
